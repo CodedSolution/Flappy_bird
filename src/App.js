@@ -13,13 +13,13 @@ const GRAVITY = 8;
 const OBJ_WIDTH = 52;
 const OBJ_SPEED = 6;
 const OBJ_GAP = 200;
+const OBJ_Testing = 300;
 
 /**
  * This function is the main component which renders all the game objects.
  * @returns None
  */
 function App() {
-
   //Changing the game values based on the activities done in the game.
   const [isStart, setIsStart] = useState(false);
   const [birdpos, setBirdpos] = useState(300);
@@ -34,7 +34,7 @@ function App() {
       intVal = setInterval(() => {
         setBirdpos((birdpos) => birdpos + GRAVITY);
       }, 24);
-    }else{
+    } else {
       setIsStart(false);
       setBirdpos(300);
       setScore(0);
@@ -71,7 +71,7 @@ function App() {
     if (
       objPos >= OBJ_WIDTH &&
       objPos <= OBJ_WIDTH + 80 &&
-      (topObj || bottomObj) 
+      (topObj || bottomObj)
     ) {
       setIsStart(false);
       setBirdpos(300);
@@ -81,18 +81,18 @@ function App() {
 
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.code === 'Space') {
+      if (e.code === "Space") {
         setIsStart(true);
         setBirdpos((prev) => prev - 30);
       }
     };
-  
-    window.addEventListener('keypress', handleKeyPress);
-  
+
+    window.addEventListener("keypress", handleKeyPress);
+
     return () => {
-      window.removeEventListener('keypress', handleKeyPress);
+      window.removeEventListener("keypress", handleKeyPress);
     };
-  }, [isStart, birdpos]); // Add isStart and birdpos to the dependency list  
+  }, [isStart, birdpos]); // Add isStart and birdpos to the dependency list
 
   //Handles the player movements.
   const handler = () => {
@@ -103,10 +103,10 @@ function App() {
 
   const handleKeyDown = (event) => {
     // Check if the pressed key is the spacebar
-    if (event.key === ' ' || event.key === 'Spacebar') {
+    if (event.key === " " || event.key === "Spacebar") {
       // Prevent the default behavior to avoid scrolling the page
       event.preventDefault();
-      
+
       // Trigger the click event
       handler();
     }
@@ -151,7 +151,7 @@ const Home = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  flexDirection: 'column';
+  flexdirection: "column";
 `;
 
 const Background = styled.div`
