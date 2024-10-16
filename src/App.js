@@ -27,6 +27,25 @@ function App() {
   const [objPos, setObjPos] = useState(WALL_WIDTH);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [accessToken, setAccessToken] = useState("");
+
+  //Retrieve userId and accessToken
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const userIdFromUrl = queryParams.get("userId");
+    const accessTokenFromUrl = queryParams.get("accessToken");
+
+    if (userIdFromUrl) {
+      setUserId(userIdFromUrl);
+      console.log("User ID:", userIdFromUrl);
+    }
+
+    if (accessTokenFromUrl) {
+      setAccessToken(accessTokenFromUrl);
+      console.log("Access Token:", accessTokenFromUrl);
+    }
+  }, []);
 
   useEffect(() => {
     setIsStart(false);
@@ -177,7 +196,6 @@ function App() {
         <GameOverModal>
           <ScorePanel>Game Over! Your Score: {score}</ScorePanel>
           <ButtonContainer>
-            <ModalButton onClick={handlePlayAgain}>Play Again</ModalButton>
             <ModalButton onClick={handleExit}>Exit</ModalButton>
           </ButtonContainer>
         </GameOverModal>
