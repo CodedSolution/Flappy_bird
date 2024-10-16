@@ -26,9 +26,19 @@ function App() {
   const [objHeight, setObjHeight] = useState(0);
   const [objPos, setObjPos] = useState(WALL_WIDTH);
   const [score, setScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
+
+  useEffect(() => {
+    setIsStart(false);
+    setGameOver(false);
+    setBirdpos(300);
+    setObjPos(WALL_WIDTH);
+  }, []);
 
   //End the game when the player hits the bottom of the screen.
   useEffect(() => {
+    if (!isStart) return;
+
     let intVal;
     if (isStart && birdpos < WALL_HEIGHT - BIRD_HEIGHT) {
       intVal = setInterval(() => {
@@ -36,8 +46,9 @@ function App() {
       }, 24);
     } else {
       setIsStart(false);
-      setBirdpos(300);
-      setScore(0);
+      // setBirdpos(300);
+      // setScore(0);
+      setGameOver(true);
     }
     return () => clearInterval(intVal);
   });
@@ -62,6 +73,8 @@ function App() {
 
   //Ends the game of the player hits one of the obstacles.
   useEffect(() => {
+    if (!isStart) return;
+
     let topObj = birdpos >= 0 && birdpos < objHeight;
     let bottomObj =
       birdpos <= WALL_HEIGHT &&
@@ -74,8 +87,9 @@ function App() {
       (topObj || bottomObj)
     ) {
       setIsStart(false);
-      setBirdpos(300);
-      setScore(0);
+      // setBirdpos(300);
+      // setScore(0);
+      setGameOver(true);
     }
   }, [isStart, birdpos, objHeight, objPos]);
 
@@ -92,13 +106,22 @@ function App() {
     return () => {
       window.removeEventListener("keypress", handleKeyPress);
     };
-  }, [isStart, birdpos]); // Add isStart and birdpos to the dependency list
+  }, [isStart, gameOver]); // Add isStart and birdpos to the dependency list
 
   //Handles the player movements.
   const handler = () => {
     if (!isStart) setIsStart(true);
     else if (birdpos < BIRD_HEIGHT) setBirdpos(0);
     else setBirdpos((birdpos) => birdpos - 50);
+  };
+
+  //Handles play again
+  const handlePlayAgain = () => {
+    setIsStart(false);
+    setBirdpos(300);
+    setObjPos(WALL_WIDTH);
+    setScore(0);
+    setGameOver(false); // Reset game over state
   };
 
   const handleKeyDown = (event) => {
@@ -112,12 +135,20 @@ function App() {
     }
   };
 
+  const handleExit = () => {
+    window.history.back(); // Go back to the previous page
+  };
+
+  const handleBackClick = () => {
+    window.history.back(); // Go back to the previous page
+  };
+
   return (
     //Whole body of the game.
     <Home onClick={handler} onKeyDown={handleKeyDown} tabIndex="0">
       <ScoreShow>Score: {score}</ScoreShow>
       <Background height={WALL_HEIGHT} width={WALL_WIDTH}>
-        {!isStart ? <Startboard>Click To Start</Startboard> : null}
+        {!isStart && !gameOver ? <Startboard>Click To Start</Startboard> : null}
         <Obj
           height={objHeight}
           width={OBJ_WIDTH}
@@ -139,6 +170,18 @@ function App() {
           deg={0}
         />
       </Background>
+
+      <BackButton onClick={handleBackClick}>Back</BackButton>
+
+      {gameOver && (
+        <GameOverModal>
+          <ScorePanel>Game Over! Your Score: {score}</ScorePanel>
+          <ButtonContainer>
+            <ModalButton onClick={handlePlayAgain}>Play Again</ModalButton>
+            <ModalButton onClick={handleExit}>Exit</ModalButton>
+          </ButtonContainer>
+        </GameOverModal>
+      )}
     </Home>
   );
 }
@@ -208,4 +251,59 @@ const ScoreShow = styled.div`
   z-index: 1;
   font-weight: bold;
   font-size: 30px;
+`;
+
+const BackButton = styled.button`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 10;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const GameOverModal = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 20;
+`;
+
+const ScorePanel = styled.div`
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-around;
+`;
+
+const ModalButton = styled.button`
+  padding: 10px 20px;
+  font-size: 18px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0056b3;
+  }
 `;
