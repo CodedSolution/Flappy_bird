@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getPosts } from "./utils/token";
 
 /**
@@ -32,22 +32,6 @@ function App() {
   const [accessToken, setAccessToken] = useState("");
   const [exitButtonDisabled, setExitButtonDisabled] = useState(true);
   const [countdown, setCountdown] = useState(3);
-
-  useEffect(() => {
-    const handleUnload = () => {
-      // Reset all states or clear any timers when navigating away
-      setIsStart(false);
-      setGameOver(false);
-      setBirdpos(300);
-      setObjPos(WALL_WIDTH);
-    };
-
-    window.addEventListener("beforeunload", handleUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleUnload);
-    };
-  }, []);
 
   useEffect(() => {
     if (gameOver) {
@@ -224,13 +208,24 @@ function App() {
     window.history.back(); // Go back to the previous page
   };
 
+  const backgroundUrl = useMemo(
+    () => `./images/background-day.png?v=${Date.now()}`,
+    []
+  );
+  const birdUrl = useMemo(
+    () => `./images/yellowbird-upflap.png?v=${Date.now()}`,
+    []
+  );
+  const pipeUrl = useMemo(() => `./images/pipe-green.png?v=${Date.now()}`, []);
+
   return (
     //Whole body of the game.
     <Home onClick={handler} onKeyDown={handleKeyDown} tabIndex="0">
       <ScoreShow>Score: {score}</ScoreShow>
-      <Background height={WALL_HEIGHT} width={WALL_WIDTH}>
+      <Background url={backgroundUrl} height={WALL_HEIGHT} width={WALL_WIDTH}>
         {!isStart && !gameOver ? <Startboard>Click To Start</Startboard> : null}
         <Obj
+          url={pipeUrl}
           height={objHeight}
           width={OBJ_WIDTH}
           left={objPos}
@@ -238,12 +233,14 @@ function App() {
           deg={180}
         />
         <Bird
+          url={birdUrl}
           height={BIRD_HEIGHT}
           width={BIRD_WIDTH}
           top={birdpos}
           left={100}
         />
         <Obj
+          url={pipeUrl}
           height={WALL_HEIGHT - OBJ_GAP - objHeight}
           width={OBJ_WIDTH}
           left={objPos}
@@ -251,7 +248,6 @@ function App() {
           deg={0}
         />
       </Background>
-
       <BackButton onClick={handleBackClick}>/Back</BackButton>
 
       {gameOver && (
@@ -280,7 +276,7 @@ const Home = styled.div`
 `;
 
 const Background = styled.div`
-  background-image: url("./images/background-day.png");
+  background-image: url(${(props) => props.url});
   background-repeat: no-repeat;
   background-size: ${(props) => props.width}px ${(props) => props.height}px;
   width: ${(props) => props.width}px;
@@ -292,7 +288,7 @@ const Background = styled.div`
 
 const Bird = styled.div`
   position: absolute;
-  background-image: url("./images/yellowbird-upflap.png");
+  background-image: url(${(props) => props.url});
   background-repeat: no-repeat;
   background-size: ${(props) => props.width}px ${(props) => props.height}px;
   width: ${(props) => props.width}px;
@@ -303,7 +299,7 @@ const Bird = styled.div`
 
 const Obj = styled.div`
   position: relative;
-  background-image: url("./images/pipe-green.png");
+  background-image: url(${(props) => props.url});
   width: ${(props) => props.width}px;
   height: ${(props) => props.height}px;
   left: ${(props) => props.left}px;
