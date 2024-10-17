@@ -248,7 +248,7 @@ function App() {
           deg={0}
         />
       </Background>
-      <BackButton onClick={handleBackClick}>/Back</BackButton>
+      <BackButton onClick={handleBackClick}>Back</BackButton>
 
       {gameOver && (
         <GameOverModal>
