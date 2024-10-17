@@ -30,6 +30,27 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [userId, setUserId] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [exitButtonDisabled, setExitButtonDisabled] = useState(true);
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    if (gameOver) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev > 0) return prev - 1;
+          clearInterval(timer);
+          setExitButtonDisabled(false); // Enable the exit button when countdown is 0
+          return 0; // Countdown reaches 0
+        });
+      }, 1000); // Decrease countdown every second (1000ms)
+
+      // Clean up the interval if the game is restarted or the gameOver state changes
+      return () => clearInterval(timer);
+    } else {
+      setExitButtonDisabled(true);
+      setCountdown(3); // Reset the countdown when the game starts again
+    }
+  }, [gameOver]);
 
   //Retrieve userId and accessToken
   useEffect(() => {
@@ -218,7 +239,9 @@ function App() {
         <GameOverModal>
           <ScorePanel>Game Over! Your Score: {score}</ScorePanel>
           <ButtonContainer>
-            <ModalButton onClick={handleExit}>Exit</ModalButton>
+            <ModalButton onClick={handleExit} disabled={exitButtonDisabled}>
+              Exit {exitButtonDisabled && `(${countdown})`}
+            </ModalButton>
           </ButtonContainer>
         </GameOverModal>
       )}
@@ -338,12 +361,12 @@ const ModalButton = styled.button`
   padding: 10px 20px;
   font-size: 18px;
   border: none;
-  background-color: #007bff;
+  background-color: ${(props) => (props.disabled ? "#cccccc" : "#007bff")};
   color: white;
   border-radius: 5px;
-  cursor: pointer;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
 
   &:hover {
-    background-color: #0056b3;
+    background-color: ${(props) => (props.disabled ? "#cccccc" : "#0056b3")};
   }
 `;
