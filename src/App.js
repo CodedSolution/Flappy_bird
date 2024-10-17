@@ -34,6 +34,22 @@ function App() {
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
+    const handleUnload = () => {
+      // Reset all states or clear any timers when navigating away
+      setIsStart(false);
+      setGameOver(false);
+      setBirdpos(300);
+      setObjPos(WALL_WIDTH);
+    };
+
+    window.addEventListener("beforeunload", handleUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+    };
+  }, []);
+
+  useEffect(() => {
     if (gameOver) {
       const timer = setInterval(() => {
         setCountdown((prev) => {
@@ -116,7 +132,7 @@ function App() {
       setGameOver(true);
     }
     return () => clearInterval(intVal);
-  });
+  }, [isStart, birdpos]);
 
   //Generating the pipes(obstacles) for the game.
   useEffect(() => {
