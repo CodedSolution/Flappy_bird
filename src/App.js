@@ -95,6 +95,9 @@ function App() {
     setGameOver(false);
     setBirdpos(300);
     setObjPos(WALL_WIDTH);
+    setScore(0);
+    setCountdown(3);
+    setExitButtonDisabled(true);
   }, []);
 
   //End the game when the player hits the bottom of the screen.
@@ -233,7 +236,7 @@ function App() {
         />
       </Background>
 
-      <BackButton onClick={handleBackClick}>Back</BackButton>
+      <BackButton onClick={handleBackClick}>/Back</BackButton>
 
       {gameOver && (
         <GameOverModal>
