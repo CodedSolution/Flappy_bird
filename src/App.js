@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
+import { getPosts } from "./utils/token";
 
 /**
  * All the constant values required for the game to work.
@@ -46,6 +47,27 @@ function App() {
       console.log("Access Token:", accessTokenFromUrl);
     }
   }, []);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (!accessToken) {
+        console.log("Access token not available yet");
+        return;
+      }
+      try {
+        const res = await getPosts(accessToken);
+        console.log("getPost res", res);
+      } catch (e) {
+        if (e instanceof Error) {
+          console.log(e.message);
+        } else {
+          console.log("cannot fetch post");
+        }
+      }
+    };
+
+    fetchPosts();
+  }, [accessToken]);
 
   useEffect(() => {
     setIsStart(false);
