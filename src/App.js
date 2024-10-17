@@ -121,7 +121,7 @@ function App() {
     if (isStart && objPos >= -OBJ_WIDTH) {
       objval = setInterval(() => {
         setObjPos((objPos) => objPos - OBJ_SPEED);
-      }, 24);
+      }, 50);
 
       return () => {
         clearInterval(objval);
