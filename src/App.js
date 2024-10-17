@@ -208,24 +208,13 @@ function App() {
     window.history.back(); // Go back to the previous page
   };
 
-  const backgroundUrl = useMemo(
-    () => `./images/background-day.png?v=${Date.now()}`,
-    []
-  );
-  const birdUrl = useMemo(
-    () => `./images/yellowbird-upflap.png?v=${Date.now()}`,
-    []
-  );
-  const pipeUrl = useMemo(() => `./images/pipe-green.png?v=${Date.now()}`, []);
-
   return (
     //Whole body of the game.
     <Home onClick={handler} onKeyDown={handleKeyDown} tabIndex="0">
       <ScoreShow>Score: {score}</ScoreShow>
-      <Background url={backgroundUrl} height={WALL_HEIGHT} width={WALL_WIDTH}>
+      <Background height={WALL_HEIGHT} width={WALL_WIDTH}>
         {!isStart && !gameOver ? <Startboard>Click To Start</Startboard> : null}
         <Obj
-          url={pipeUrl}
           height={objHeight}
           width={OBJ_WIDTH}
           left={objPos}
@@ -233,14 +222,12 @@ function App() {
           deg={180}
         />
         <Bird
-          url={birdUrl}
           height={BIRD_HEIGHT}
           width={BIRD_WIDTH}
           top={birdpos}
           left={100}
         />
         <Obj
-          url={pipeUrl}
           height={WALL_HEIGHT - OBJ_GAP - objHeight}
           width={OBJ_WIDTH}
           left={objPos}
@@ -276,7 +263,7 @@ const Home = styled.div`
 `;
 
 const Background = styled.div`
-  background-image: url(${(props) => props.url});
+  background-image: url("./images/background-day.png");
   background-repeat: no-repeat;
   background-size: ${(props) => props.width}px ${(props) => props.height}px;
   width: ${(props) => props.width}px;
@@ -285,10 +272,9 @@ const Background = styled.div`
   overflow: hidden;
   border: 2px solid black;
 `;
-
 const Bird = styled.div`
   position: absolute;
-  background-image: url(${(props) => props.url});
+  background-image: url("./images/yellowbird-upflap.png");
   background-repeat: no-repeat;
   background-size: ${(props) => props.width}px ${(props) => props.height}px;
   width: ${(props) => props.width}px;
@@ -296,10 +282,9 @@ const Bird = styled.div`
   top: ${(props) => props.top}px;
   left: ${(props) => props.left}px;
 `;
-
 const Obj = styled.div`
   position: relative;
-  background-image: url(${(props) => props.url});
+  background-image: url("./images/pipe-green.png");
   width: ${(props) => props.width}px;
   height: ${(props) => props.height}px;
   left: ${(props) => props.left}px;
