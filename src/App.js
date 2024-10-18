@@ -390,8 +390,8 @@ const Startboard = styled.div`
 
 const ScoreShow = styled.div`
   position: absolute;
-  top: 10%;
-  left: 47%;
+  top: 8%;
+  right: 10%;
   z-index: 1;
   font-weight: bold;
   font-size: 30px;
