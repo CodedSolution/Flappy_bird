@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useEffect, useState, useMemo } from "react";
-import { getPosts } from "./utils/token";
+import { checkUserClaimed, submitScores } from "./utils/token";
 
 /**
  * All the constant values required for the game to work.
@@ -30,33 +30,18 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [userId, setUserId] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [token, setTokenType] = useState("");
   const [exitButtonDisabled, setExitButtonDisabled] = useState(true);
   const [countdown, setCountdown] = useState(3);
-
-  useEffect(() => {
-    if (gameOver) {
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev > 0) return prev - 1;
-          clearInterval(timer);
-          setExitButtonDisabled(false); // Enable the exit button when countdown is 0
-          return 0; // Countdown reaches 0
-        });
-      }, 1000); // Decrease countdown every second (1000ms)
-
-      // Clean up the interval if the game is restarted or the gameOver state changes
-      return () => clearInterval(timer);
-    } else {
-      setExitButtonDisabled(true);
-      setCountdown(3); // Reset the countdown when the game starts again
-    }
-  }, [gameOver]);
+  const [hasClaimed, setHasClaimed] = useState(true);
+  const [tokensEarned, setTokensEarned] = useState(0);
 
   //Retrieve userId and accessToken
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const userIdFromUrl = queryParams.get("userId");
     const accessTokenFromUrl = queryParams.get("accessToken");
+    const tokenTypeFromUrl = queryParams.get("tokenType");
 
     if (userIdFromUrl) {
       setUserId(userIdFromUrl);
@@ -67,29 +52,102 @@ function App() {
       setAccessToken(accessTokenFromUrl);
       console.log("Access Token:", accessTokenFromUrl);
     }
+
+    if (tokenTypeFromUrl) {
+      setTokenType(tokenTypeFromUrl);
+      console.log("Token Type:", tokenTypeFromUrl);
+    }
   }, []);
 
+  //check if user already claimed token
   useEffect(() => {
-    const fetchPosts = async () => {
-      if (!accessToken) {
-        console.log("Access token not available yet");
+    const checkUserClaimStatus = async () => {
+      if (!accessToken || !userId) {
+        console.log("Access token or user ID not available yet");
         return;
       }
       try {
-        const res = await getPosts(accessToken);
-        console.log("getPost res", res);
+        console.log(
+          "Checking with accessToken:",
+          accessToken,
+          "and userId:",
+          userId
+        );
+        const res = await checkUserClaimed(accessToken, userId);
+        console.log("check user claimed res", res);
+
+        // Explicitly check the value of res.message
+        if (res === true) {
+          setHasClaimed(true);
+          console.log("has claim status: true");
+        } else {
+          setHasClaimed(false);
+          console.log("has claim status: false");
+        }
       } catch (e) {
         if (e instanceof Error) {
-          console.log(e.message);
+          console.log("Error:", e.message);
         } else {
-          console.log("cannot fetch post");
+          console.log("Cannot fetch user claimed result");
         }
       }
     };
 
-    fetchPosts();
-  }, [accessToken]);
+    if (accessToken && userId) {
+      checkUserClaimStatus();
+    }
+  }, [accessToken, userId]);
 
+  //Handle game over and countdown timer
+  useEffect(() => {
+    if (gameOver) {
+      console.log("has claim game over status:", hasClaimed);
+      handleGameOver();
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev > 0) return prev - 1;
+          clearInterval(timer);
+          setExitButtonDisabled(false);
+          return 0;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else {
+      setExitButtonDisabled(true);
+      setCountdown(3);
+    }
+  }, [gameOver]);
+
+  //Submit score if user hasn't claimed tokens
+  const handleGameOver = async () => {
+    try {
+      // Use claimStatus directly instead of relying on setHasClaimed()
+      if (hasClaimed === true) {
+        console.log("User has already claimed, skipping score submission.");
+      } else {
+        // If the user hasn't claimed, submit the score
+        const points = score;
+        setTokensEarned(points);
+
+        console.log("Submitting score as the user has not claimed before...");
+        const submitRes = await submitScores(
+          accessToken,
+          userId,
+          token,
+          points
+        );
+        console.log("Submit score response:", submitRes);
+      }
+    } catch (e) {
+      console.log(
+        "Error during game over handling or checking claim status:",
+        e
+      );
+    }
+  };
+
+  //Reset game state when replaying
   useEffect(() => {
     setIsStart(false);
     setGameOver(false);
@@ -208,13 +266,24 @@ function App() {
     window.history.back(); // Go back to the previous page
   };
 
+  const backgroundUrl = useMemo(
+    () => `./images/background-day.png?v=${Date.now()}`,
+    []
+  );
+  const birdUrl = useMemo(
+    () => `./images/yellowbird-upflap.png?v=${Date.now()}`,
+    []
+  );
+  const pipeUrl = useMemo(() => `./images/pipe-green.png?v=${Date.now()}`, []);
+
   return (
     //Whole body of the game.
     <Home onClick={handler} onKeyDown={handleKeyDown} tabIndex="0">
       <ScoreShow>Score: {score}</ScoreShow>
-      <Background height={WALL_HEIGHT} width={WALL_WIDTH}>
+      <Background url={backgroundUrl} height={WALL_HEIGHT} width={WALL_WIDTH}>
         {!isStart && !gameOver ? <Startboard>Click To Start</Startboard> : null}
         <Obj
+          url={pipeUrl}
           height={objHeight}
           width={OBJ_WIDTH}
           left={objPos}
@@ -222,12 +291,14 @@ function App() {
           deg={180}
         />
         <Bird
+          url={birdUrl}
           height={BIRD_HEIGHT}
           width={BIRD_WIDTH}
           top={birdpos}
           left={100}
         />
         <Obj
+          url={pipeUrl}
           height={WALL_HEIGHT - OBJ_GAP - objHeight}
           width={OBJ_WIDTH}
           left={objPos}
@@ -239,7 +310,15 @@ function App() {
 
       {gameOver && (
         <GameOverModal>
-          <ScorePanel>Game Over! Your Score: {score}</ScorePanel>
+          <ScorePanel>
+            <GameOverText>Game Over!</GameOverText>
+            <ScoreText>Your Score: {score}</ScoreText>
+            <TokenText>
+              {hasClaimed
+                ? "You have already claimed your tokens."
+                : `You earned ${tokensEarned} tokens!`}
+            </TokenText>
+          </ScorePanel>
           <ButtonContainer>
             <ModalButton onClick={handleExit} disabled={exitButtonDisabled}>
               Exit {exitButtonDisabled && `(${countdown})`}
@@ -263,7 +342,7 @@ const Home = styled.div`
 `;
 
 const Background = styled.div`
-  background-image: url("./images/background-day.png");
+  background-image: url(${(props) => props.url});
   background-repeat: no-repeat;
   background-size: ${(props) => props.width}px ${(props) => props.height}px;
   width: ${(props) => props.width}px;
@@ -272,9 +351,10 @@ const Background = styled.div`
   overflow: hidden;
   border: 2px solid black;
 `;
+
 const Bird = styled.div`
   position: absolute;
-  background-image: url("./images/yellowbird-upflap.png");
+  background-image: url(${(props) => props.url});
   background-repeat: no-repeat;
   background-size: ${(props) => props.width}px ${(props) => props.height}px;
   width: ${(props) => props.width}px;
@@ -282,9 +362,10 @@ const Bird = styled.div`
   top: ${(props) => props.top}px;
   left: ${(props) => props.left}px;
 `;
+
 const Obj = styled.div`
   position: relative;
-  background-image: url("./images/pipe-green.png");
+  background-image: url(${(props) => props.url});
   width: ${(props) => props.width}px;
   height: ${(props) => props.height}px;
   left: ${(props) => props.left}px;
@@ -369,4 +450,18 @@ const ModalButton = styled.button`
   &:hover {
     background-color: ${(props) => (props.disabled ? "#cccccc" : "#0056b3")};
   }
+`;
+
+const GameOverText = styled.div`
+  font-size: 26px;
+  margin-bottom: 10px;
+`;
+
+const ScoreText = styled.div`
+  font-size: 20px;
+  margin-bottom: 10px;
+`;
+
+const TokenText = styled.div`
+  font-size: 12px;
 `;

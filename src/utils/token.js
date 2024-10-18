@@ -1,15 +1,17 @@
 import { BACKEND_URL } from "./endpoints";
 
-export const getPosts = async (accessToken) => {
-  console.log(`${BACKEND_URL}/api/post/list`);
-  const request = new Request(`${BACKEND_URL}/api/post/list`, {
-    method: "GET",
-    credentials: "same-origin",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: accessToken,
-    },
-  });
+export const checkUserClaimed = async (accessToken, userId) => {
+  const request = new Request(
+    `${BACKEND_URL}/api/token/miniGame/airdrop/${userId}`,
+    {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: accessToken,
+      },
+    }
+  );
 
   const response = await fetch(request);
   const contentType = response.headers.get("content-type");
@@ -28,4 +30,36 @@ export const getPosts = async (accessToken) => {
   } else {
     throw new Error("Invalid response format, expected JSON");
   }
+};
+
+export const submitScores = async (accessToken, userId, token, points) => {
+  const request = new Request(BACKEND_URL + `/api/token/miniGame`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-type": "application/json",
+      authorization: accessToken,
+    },
+    body: JSON.stringify({
+      user: userId,
+      token: token,
+      points: points,
+    }),
+  });
+
+  const response = await fetch(request);
+  if (response.status === 500) {
+    throw new Error("Internal server error");
+  }
+  if (response.status === 401) {
+    throw new Error("Unauthorized");
+  }
+  const data = await response.json();
+  if (response.status > 400 && response.status < 500) {
+    if (data.detail) {
+      throw data.detail;
+    }
+    throw data.message.error;
+  }
+  return data.message;
 };
