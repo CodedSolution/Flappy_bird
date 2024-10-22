@@ -1,4 +1,4 @@
-import { BACKEND_URL } from "./endpoints";
+import { BACKEND_URL, GAME_TOKEN_ID } from "./endpoints";
 
 export const checkUserClaimed = async (accessToken, userId) => {
   const request = new Request(
@@ -32,7 +32,16 @@ export const checkUserClaimed = async (accessToken, userId) => {
   }
 };
 
-export const submitScores = async (accessToken, userId, token, points) => {
+export const submitScores = async (accessToken, userId, points) => {
+  console.log("GAME_TOKEN_ID:", GAME_TOKEN_ID);
+
+  const body = {
+    user: userId,
+    token: GAME_TOKEN_ID,
+    points: points,
+  };
+
+  console.log("Request Body:", body);
   const request = new Request(BACKEND_URL + `/api/token/miniGame`, {
     method: "POST",
     credentials: "same-origin",
@@ -42,7 +51,7 @@ export const submitScores = async (accessToken, userId, token, points) => {
     },
     body: JSON.stringify({
       user: userId,
-      token: token,
+      token: GAME_TOKEN_ID,
       points: points,
     }),
   });

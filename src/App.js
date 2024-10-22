@@ -41,7 +41,6 @@ function App() {
     const queryParams = new URLSearchParams(window.location.search);
     const userIdFromUrl = queryParams.get("userId");
     const accessTokenFromUrl = queryParams.get("accessToken");
-    const tokenTypeFromUrl = queryParams.get("tokenType");
 
     if (userIdFromUrl) {
       setUserId(userIdFromUrl);
@@ -51,11 +50,6 @@ function App() {
     if (accessTokenFromUrl) {
       setAccessToken(accessTokenFromUrl);
       console.log("Access Token:", accessTokenFromUrl);
-    }
-
-    if (tokenTypeFromUrl) {
-      setTokenType(tokenTypeFromUrl);
-      console.log("Token Type:", tokenTypeFromUrl);
     }
   }, []);
 
@@ -131,12 +125,7 @@ function App() {
         setTokensEarned(points);
 
         console.log("Submitting score as the user has not claimed before...");
-        const submitRes = await submitScores(
-          accessToken,
-          userId,
-          token,
-          points
-        );
+        const submitRes = await submitScores(accessToken, userId, points);
         console.log("Submit score response:", submitRes);
       }
     } catch (e) {
