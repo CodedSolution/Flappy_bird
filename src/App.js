@@ -268,7 +268,7 @@ function App() {
   return (
     //Whole body of the game.
     <Home onClick={handler} onKeyDown={handleKeyDown} tabIndex="0">
-      <ScoreShow>ScoreHAHA: {score}</ScoreShow>
+      <ScoreShow>Score: {score}</ScoreShow>
       <Background url={backgroundUrl} height={WALL_HEIGHT} width={WALL_WIDTH}>
         {!isStart && !gameOver ? <Startboard>Click To Start</Startboard> : null}
         <Obj
